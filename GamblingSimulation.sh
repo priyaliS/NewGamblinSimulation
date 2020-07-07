@@ -1,41 +1,49 @@
-#!/bin/bash 
+#!/bin/bash
 echo "gambling simulator"
+
 #constants
 INITIAL=100
 BET=1
-#varibles
-stake=$INITIAL
+
+#variables
 stakePercentAmount=$(( 50*$INITIAL/100 ))
 maxWin=$(( $stakePercentAmount+$INITIAL ))
 maxLoss=$(( $INITIAL-$stakePercentAmount ))
-numOfDays=20
+numOfDays=30
+loss=0
+win=0
+daysWin=0
+daysLoss=0
 
-function calculate() 
-{	stake=$INITIAL
-        while [ $stake -lt $maxWin ] && [ $stake -gt $maxLoss ]
+declare -A fullDay
+
+function betPlayed()
+{       dayStake=$INITIAL
+        while [ $dayStake -lt $maxWin ] && [ $dayStake -gt $maxLoss ]
         do
-        play=$(( RANDOM%2 ))
-
-         if [ $play -eq 1 ]
-         then
-                stake=$(( stake+BET ))
-         else
-                stake=$(( stake-BET ))
-         fi
+         play=$(( RANDOM % 2 ))
+                if [ $play -eq 1 ]
+                then
+                        dayStake=$(( $dayStake+$BET ))
+                else
+                        dayStake=$(( $dayStake-$BET ))
+                fi
         done
 }
-
-for (( day=0; day<$numOfDays; day++ ))
+        for (( day=1; day<=$numOfDays; day++ ))
         do
-        calculate
-                if [ $stake -eq $maxLoss ]
+        betPlayed
+	fullDay["Day $day"]=$stakePercentAmount
+
+                if [ $dayStake -eq $maxLoss ]
                 then
-                loss=$(( loss - 50 ))
+                        loss=$(( $loss-$stakePercentAmount ))
+			(( daysLoss++ ))
                 else
-                win=$(( win + 50 ))
-                fi 
-        echo "Resign for day"
+                        win=$(( $win+$stakePercentAmount ))
+			(( daysWin++ ))
+                fi
         done
 
-echo "Total amount Loss"$loss
-echo "Total amount Won-" $win
+echo "Winned days $daysWin by $(($daysWin*$stakePercentAmount))" 
+echo "Lossed days $daysLoss by  $(($daysLoss*$stakePercentAmount))"
